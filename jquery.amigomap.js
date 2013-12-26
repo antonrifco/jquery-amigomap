@@ -6,7 +6,7 @@
  * Dual licensed under the MIT and GPL licenses.
  *
  * Date: December 22, 2012
- * Version: 0.1
+ * Version: 0.1.2
  */
 
 (function($) {
@@ -32,19 +32,19 @@
             },
             icon: {
                 hotel: "http://chart.googleapis.com/chart?chst=d_map_pin_icon&chld=flag|446288",
-                inactive: "http://chart.googleapis.com/chart?chst=d_map_xpin_shadow&chld=pin_sleft"
+                inactive: "https://chart.googleapis.com/chart?chst=d_simple_text_icon_left&chld=|14|000|flag|16|000|FFF"
             },
             colorset: [
-                '#426289', /* route for day 1 */
-                '#858165', /* route for day 2 */
-                '#70ADC4', /* route for day 3 */
-                '#ea8a00', /* route for day 4 */
-                '#F7998B', /* route for day 5 */
-                '#38311F', /* route for day 6 */
-                '#FF034E', /* route for day 7 */
-                '#017854', /* route for day 8 */
-                '#C6CFCC', /* route for day 9 */
-                '#2294F2'  /* route for day 10 */
+                '#426289', /* route color for day 1 */
+                '#858165', /* route color for day 2 */
+                '#70ADC4', /* route color for day 3 */
+                '#ea8a00', /* route color for day 4 */
+                '#F7998B', /* route color for day 5 */
+                '#38311F', /* route color for day 6 */
+                '#FF034E', /* route color for day 7 */
+                '#017854', /* route color for day 8 */
+                '#C6CFCC', /* route color for day 9 */
+                '#2294F2'  /* route color for day 10 */
             ],
             directionService: true,
             agenda: sample_agenda,
@@ -109,56 +109,7 @@
                 infoBoxClearance: new google.maps.Size(1, 1)
             });
             
-            $.each(config.agenda, function(index, value){
-                markers[index] = [];
-                markers_listeners[index] = [];
-                var paths = [];
-                $.each(value, function(order, venue){
-                    var latlong = new google.maps.LatLng(venue.latitude, venue.longitude);
-                    if(index == 0 && order == 0) /* set map to center of first venue */
-                        map.setCenter(latlong);
-                    
-                    paths.push(latlong);
-                    if(order == 0 || order == value.length - 1){
-                        markers[index][order] = new google.maps.Marker({
-                            position: latlong,
-                            map: map,
-                            icon: config.icon.hotel
-                        });
-                    } else {
-                        markers[index][order] = new google.maps.Marker({
-                            position: latlong,
-                            map: map,
-                            icon: config.icon.inactive
-                        });
-                    }
-                    
-                    markers_listeners[index][order] = google.maps.event.addListener(markers[index][order], 'click', function() {
-                        venueInfobox.setContent('<div><div class="placetooltipbox"><center><span class="placetooltiptext">' +venue.name+ '</span></center></div><img src="img/dashboard/triangle.png" class="placetooltiptriangle"></div>');
-                        venueInfobox.open(map, this);
-                        map.panTo(markers[index][order].getPosition());
-                    });
-                    
-                    if ( $.isFunction( config.onsetmarker ) ) 
-                        config.onsetmarker(index, order, markers[index][order]);
-                    
-                });
-                
-                if(config.directionService) {
-                    polyDisplay[index] = new google.maps.Polyline({
-                        path: paths,
-                        strokeColor: config.colorset[index],
-                        strokeOpacity: 0.6,
-                        strokeWeight: 3
-                    });
-                    polyDisplay[index].setMap(map);
-                    polyDisplay[index].setVisible(true);
-                    
-                    directionsDisplay[index] = [];
-                    cachedroute[index] = [];
-                    directionsService = new google.maps.DirectionsService();
-                }
-            });
+            plotAllMarks();
             
             if ($.isFunction(config.oncomplete)) {
                 config.oncomplete.call(this);
@@ -166,6 +117,40 @@
         }
         google.maps.event.addDomListener(window, 'load', initialize);
 
+        return this;
+    }
+    
+    $.fn.amigomap.updateAgenda = function(agenda){
+        config.agenda = agenda;
+        
+        $.each(polyDisplay, function(day, apolyDisplay){
+            apolyDisplay.setMap(null);
+        });
+        
+        $.each(directionsDisplay, function(day, adirectionsDisplay){
+            $.each(adirectionsDisplay, function(bday, direct){
+                if( typeof direct === 'undefined' )
+                    return;
+                
+                direct.setMap(null);
+            });
+        });
+        
+        polyDisplay = [], directionsDisplay = [], cachedroute = [], directionsService = null;
+        
+        $.each(markers, function(day, amarkers){
+            $.each(amarkers, function(bday, marker){
+                marker.setMap(null);
+            });
+        });
+        
+        $.each(markers_listeners, function(day, amarkers_listeners){
+            $.each(amarkers_listeners, function(bday, markers_listener){
+                google.maps.event.removeListener(markers_listener);
+            });
+        });
+        
+        plotAllMarks();
         return this;
     }
 
@@ -237,15 +222,6 @@
                             longest = venue;
                         }
 
-                        if( typeof directionsDisplay[index][order] === 'undefined' )
-                            getRoute();
-                        else {
-                            if ( $.isFunction( fconfig.oncachedroute ) ) 
-                                fconfig.oncachedroute(index, order-1, cachedroute[index][order-1]);
-                            
-                            directionsDisplay[index][order].setMap(map);
-                        }
-                        
                         function getRoute(){
                             var dserver_param = {
                                 origin: new google.maps.LatLng(before.latitude, before.longitude),
@@ -256,33 +232,47 @@
                                 },
                                 unitSystem: google.maps.UnitSystem.METRIC
                             };
-                            directionsService.route(dserver_param, function(response, status) { //Direction request is ASYNCHRONOUS
-                                if (status == google.maps.DirectionsStatus.OK) {
-                                    directionsDisplay[index][order] = new google.maps.DirectionsRenderer({
-                                        polylineOptions: new google.maps.Polyline({
-                                            strokeColor: config.colorset[index],
-                                            strokeOpacity: 0.9,
-                                            strokeWeight: 6
-                                        }),
-                                        draggable: false,
-                                        suppressMarkers: true,
-                                        map: map,
-                                        //preserveViewport: true
-                                    });
-                                    directionsDisplay[index][order].setDirections(response);
-                                    cachedroute[index][order-1] = response.routes;
-                                    if ( $.isFunction( fconfig.onsetroute ) ) 
-                                        fconfig.onsetroute(index, order-1, response.routes);
-                                    
-                                } else {
-                                    /* manage retry */
-                                    var wait = (status == google.maps.DirectionsStatus.OVER_QUERY_LIMIT) ? 2500 : 700;
-                                    setTimeout(function() {
-                                        console.log('RETRY getting route, due to:' + status);
-                                        getRoute();
-                                    }, (wait));
-                                }
-                            });
+                            
+                            function hitroute() {
+                                directionsService.route(dserver_param, function(response, status) { //Direction request is ASYNCHRONOUS
+                                    if (status == google.maps.DirectionsStatus.OK) {
+                                        directionsDisplay[index][order] = new google.maps.DirectionsRenderer({
+                                            polylineOptions: new google.maps.Polyline({
+                                                strokeColor: config.colorset[index],
+                                                strokeOpacity: 0.9,
+                                                strokeWeight: 6
+                                            }),
+                                            draggable: false,
+                                            suppressMarkers: true,
+                                            map: map,
+                                            //preserveViewport: true
+                                        });
+                                        directionsDisplay[index][order].setDirections(response);
+                                        cachedroute[index][order-1] = response.routes;
+
+                                        if ( $.isFunction( fconfig.onsetroute ) ) 
+                                            fconfig.onsetroute(index, order, response.routes, false); //not cached
+
+                                    } else {
+                                        /* manage retry */
+                                        var wait = (status == google.maps.DirectionsStatus.OVER_QUERY_LIMIT) ? 2500 : 700;
+                                        setTimeout(function() {
+                                            console.log('RETRY getting route, due to:' + status);
+                                            hitroute();
+                                        }, (wait));
+                                    }
+                                });
+                            }
+                            hitroute();
+                        }
+
+                        if( typeof directionsDisplay[index][order] === 'undefined' )
+                            getRoute();
+                        else {
+                            if ( $.isFunction( fconfig.oncachedroute ) ) 
+                                fconfig.oncachedroute(index, order, cachedroute[index][order-1], true); //cached
+                            
+                            directionsDisplay[index][order].setMap(map);
                         }
                     } else {
                         if( typeof directionsDisplay[index][order] !== 'undefined' )
@@ -318,6 +308,8 @@
     }
     
     $.fn.amigomap.getMarker = function(day, index){
+        if(!markers[day] || !markers[day][index])
+            return null;
         return markers[day][index];
     }
     
@@ -344,6 +336,59 @@
         var listener = google.maps.event.addListener(map, "idle", function() { 
             map.setZoom(map.getZoom() + increment); 
             google.maps.event.removeListener(listener); 
+        });
+    }
+    
+    function plotAllMarks() {
+        $.each(config.agenda, function(index, value){
+            markers[index] = [];
+            markers_listeners[index] = [];
+            var paths = [];
+            $.each(value, function(order, venue){
+                var latlong = new google.maps.LatLng(venue.latitude, venue.longitude);
+                if(index == 0 && order == 0) /* set map to center of first venue */
+                    map.setCenter(latlong);
+
+                paths.push(latlong);
+                if(order == 0 || order == value.length - 1){
+                    markers[index][order] = new google.maps.Marker({
+                        position: latlong,
+                        map: map,
+                        icon: config.icon.hotel
+                    });
+                } else {
+                    markers[index][order] = new google.maps.Marker({
+                        position: latlong,
+                        map: map,
+                        icon: config.icon.inactive
+                    });
+                }
+
+                markers_listeners[index][order] = google.maps.event.addListener(markers[index][order], 'click', function() {
+                    venueInfobox.setContent('<div><div class="placetooltipbox"><center><span class="placetooltiptext">' +venue.name+ '</span></center></div><img src="img/dashboard/triangle.png" class="placetooltiptriangle"></div>');
+                    venueInfobox.open(map, this);
+                    map.panTo(markers[index][order].getPosition());
+                });
+
+                if ( $.isFunction( config.onsetmarker ) ) 
+                    config.onsetmarker(index, order, markers[index][order]);
+
+            });
+
+            if(config.directionService) {
+                polyDisplay[index] = new google.maps.Polyline({
+                    path: paths,
+                    strokeColor: config.colorset[index],
+                    strokeOpacity: 0.6,
+                    strokeWeight: 3
+                });
+                polyDisplay[index].setMap(map);
+                polyDisplay[index].setVisible(true);
+
+                directionsDisplay[index] = [];
+                cachedroute[index] = [];
+                directionsService = new google.maps.DirectionsService();
+            }
         });
     }
     
