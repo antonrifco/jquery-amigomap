@@ -5,7 +5,7 @@
  * Copyright (c) 2013 Anton Rifco
  * Dual licensed under the MIT and GPL licenses.
  *
- * Date: December 22, 2012
+ * Date: December 22, 2013
  * Version: 0.1.2
  */
 
@@ -95,6 +95,9 @@
                 panoramioLayer.setMap(map);
             }
             
+            if(config.directionService)
+                directionsService = new google.maps.DirectionsService();
+            
             var venueFullInfoBoxStyle = new Object({
             });
             venueFullInfoBoxStyle['-moz-animation'] = "mymove .30s alternate";
@@ -151,6 +154,30 @@
         });
         
         plotAllMarks();
+        return this;
+    }
+    
+    $.fn.amigomap.updateAgendaDay = function(day, data){
+        config.agenda[day] = data;
+        
+        polyDisplay[day].setMap(null);
+        
+        $.each(directionsDisplay[day], function(bday, direct){
+            if( typeof direct === 'undefined' )
+                return;
+
+            direct.setMap(null);
+        });
+        
+        $.each(markers[day], function(bday, marker){
+            marker.setMap(null);
+        });
+        
+        $.each(markers_listeners[day], function(bday, markers_listener){
+            google.maps.event.removeListener(markers_listener);
+        });
+        
+        plotMarks(day, data);
         return this;
     }
 
@@ -341,55 +368,58 @@
     
     function plotAllMarks() {
         $.each(config.agenda, function(index, value){
-            markers[index] = [];
-            markers_listeners[index] = [];
-            var paths = [];
-            $.each(value, function(order, venue){
-                var latlong = new google.maps.LatLng(venue.latitude, venue.longitude);
-                if(index == 0 && order == 0) /* set map to center of first venue */
-                    map.setCenter(latlong);
+            plotMarks(index, value);
+        });
+    }
+    
+    function plotMarks(index, value) {
+        markers[index] = [];
+        markers_listeners[index] = [];
+        var paths = [];
+        $.each(value, function(order, venue){
+            var latlong = new google.maps.LatLng(venue.latitude, venue.longitude);
+            if(index == 0 && order == 0) /* set map to center of first venue */
+                map.setCenter(latlong);
 
-                paths.push(latlong);
-                if(order == 0 || order == value.length - 1){
-                    markers[index][order] = new google.maps.Marker({
-                        position: latlong,
-                        map: map,
-                        icon: config.icon.hotel
-                    });
-                } else {
-                    markers[index][order] = new google.maps.Marker({
-                        position: latlong,
-                        map: map,
-                        icon: config.icon.inactive
-                    });
-                }
-
-                markers_listeners[index][order] = google.maps.event.addListener(markers[index][order], 'click', function() {
-                    venueInfobox.setContent('<div><div class="placetooltipbox"><center><span class="placetooltiptext">' +venue.name+ '</span></center></div><img src="img/dashboard/triangle.png" class="placetooltiptriangle"></div>');
-                    venueInfobox.open(map, this);
-                    map.panTo(markers[index][order].getPosition());
+            paths.push(latlong);
+            if(order == 0 || order == value.length - 1){
+                markers[index][order] = new google.maps.Marker({
+                    position: latlong,
+                    map: map,
+                    icon: config.icon.hotel
                 });
+            } else {
+                markers[index][order] = new google.maps.Marker({
+                    position: latlong,
+                    map: map,
+                    icon: config.icon.inactive
+                });
+            }
 
-                if ( $.isFunction( config.onsetmarker ) ) 
-                    config.onsetmarker(index, order, markers[index][order]);
-
+            markers_listeners[index][order] = google.maps.event.addListener(markers[index][order], 'click', function() {
+                venueInfobox.setContent('<div><div class="placetooltipbox"><center><span class="placetooltiptext">' +venue.name+ '</span></center></div><img src="img/dashboard/triangle.png" class="placetooltiptriangle"></div>');
+                venueInfobox.open(map, this);
+                map.panTo(markers[index][order].getPosition());
             });
 
-            if(config.directionService) {
-                polyDisplay[index] = new google.maps.Polyline({
-                    path: paths,
-                    strokeColor: config.colorset[index],
-                    strokeOpacity: 0.6,
-                    strokeWeight: 3
-                });
-                polyDisplay[index].setMap(map);
-                polyDisplay[index].setVisible(true);
+            if ( $.isFunction( config.onsetmarker ) ) 
+                config.onsetmarker(index, order, markers[index][order]);
 
-                directionsDisplay[index] = [];
-                cachedroute[index] = [];
-                directionsService = new google.maps.DirectionsService();
-            }
         });
+
+        if(config.directionService) {
+            polyDisplay[index] = new google.maps.Polyline({
+                path: paths,
+                strokeColor: config.colorset[index],
+                strokeOpacity: 0.6,
+                strokeWeight: 3
+            });
+            polyDisplay[index].setMap(map);
+            polyDisplay[index].setVisible(true);
+
+            directionsDisplay[index] = [];
+            cachedroute[index] = [];
+        }
     }
     
     function getDistance(lat1,lon1,lat2,lon2) {
