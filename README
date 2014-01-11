@@ -1,12 +1,19 @@
 ## Jquery AMIGO MAP
 
 # Google Maps wrapper in Jquery
-# Feature
-# 1. Show Maps
-# 2. Manage Direction Service
-# 3. Basic function: zoom in, zoom out
+Feature
+1. Show Maps
+2. Manage Direction Service from agenda array (multiple days agenda)
+3. Basic function: zoom in, zoom out
+4. Update the whole agenda
 
 ## Updated: 27 December 2013
-# Updates:
-# 1. Update agenda per day ($.fn.amigomap.updateAgendaDay)
-# 2. Update marker for a specified day 
+Updates:
+1. Update agenda per day ($.fn.amigomap.updateAgendaDay)
+2. Update marker for a specified day 
+
+## Updated: 11 January 2014
+Updates:
+1. Adding sample.html
+2. Cache route plotting
+3. Update colorset

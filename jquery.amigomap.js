@@ -113,15 +113,23 @@
             });
             
             plotAllMarks();
-            
+        
             if ($.isFunction(config.oncomplete)) {
                 config.oncomplete.call(this);
             }
+            return;
         }
-        google.maps.event.addDomListener(window, 'load', initialize);
-
+        //google.maps.event.addDomListener(window, 'load', initialize);
+        //threaded
+        setTimeout(function() { initialize(); }, 0 );
+        
         return this;
     }
+    
+    $.fn.amigomap.updateColorset = function(colorset){
+        config.colorset = colorset;
+        return this;
+    };
     
     $.fn.amigomap.updateAgenda = function(agenda){
         config.agenda = agenda;
@@ -139,7 +147,7 @@
             });
         });
         
-        polyDisplay = [], directionsDisplay = [], cachedroute = [], directionsService = null;
+        polyDisplay = [], directionsDisplay = [], cachedroute = [];
         
         $.each(markers, function(day, amarkers){
             $.each(amarkers, function(bday, marker){
@@ -349,7 +357,7 @@
         if(! intRegex.test(increment)) {
            throw 'Please put valid integer value as argument';
         }
-        var listener = google.maps.event.addListener(map, "idle", function() { 
+        return listener = google.maps.event.addListener(map, "idle", function() { 
             map.setZoom(map.getZoom() - increment); 
             google.maps.event.removeListener(listener); 
         });
@@ -360,16 +368,17 @@
         if(! intRegex.test(increment)) {
            throw 'Please put valid integer value as argument';
         }
-        var listener = google.maps.event.addListener(map, "idle", function() { 
+        return listener = google.maps.event.addListener(map, "idle", function() { 
             map.setZoom(map.getZoom() + increment); 
             google.maps.event.removeListener(listener); 
         });
     }
     
-    function plotAllMarks() {
+    function plotAllMarks(oncomplete) {
         $.each(config.agenda, function(index, value){
             plotMarks(index, value);
         });
+        return this;
     }
     
     function plotMarks(index, value) {
@@ -420,6 +429,7 @@
             directionsDisplay[index] = [];
             cachedroute[index] = [];
         }
+        return this;
     }
     
     function getDistance(lat1,lon1,lat2,lon2) {
