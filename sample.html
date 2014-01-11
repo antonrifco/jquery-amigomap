@@ -1,0 +1,269 @@
+<html>
+<head></head>
+<body>
+	<a href='#day1' id='day1'>Day 1</a> || <a href='#day2' id='day2'>Day 2</a> | <a href='#day3' id='day3'>Day 3</a>
+	
+	<div id="map-canvas" style='height:500px'></div>
+	<script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=weather&key=AIzaSyA-MTqkgzBqvd4IX-5_m8jAAG8lce3nwSY"></script>
+    <script src="https://google-maps-utility-library-v3.googlecode.com/svn-history/r49/trunk/infobox/src/infobox.js"></script>
+    
+    <script src="jquery.amigomap.js"></script>
+    <script>
+		var trip_agenda = [
+            [
+                {
+                    id: "HTL52613f3a13e73b8106fec22759ac2a41",
+                    name: "Concorde Hotel Singapore",
+                    description: "Getting ready",
+                    latitude: 1.300638,
+                    longitude: 103.841972,
+                    travelmode: "DRIVING",
+                    start: 1386838800,
+                    duration: 0
+                },
+                {
+                    id: "ATTb514ef2f549bf13d207f77e15a9151db",
+                    name: "Jurong Bird Park",
+                    description: "find unique bird",
+                    latitude: 1.32108,
+                    longitude: 103.705299,
+                    travelmode: "DRIVING",
+                    start: 1386838800,
+                    duration: 12600
+                },
+                {
+                    id: "ATT08e2785d8b31a987f88685d562f1814f",
+                    name: "Singapore Discovery Centre",
+                    description: "enjoy the place",
+                    latitude: 1.332201,
+                    longitude: 103.678627,
+                    travelmode: "DRIVING",
+                    start: 1386851400,
+                    duration: 5400
+                },
+                {
+                    id: "ATT2e2532175e701fabaeaa7a3d9b47c499",
+                    name: "Singapore Zoo",
+                    description: "up close the wildlife",
+                    latitude: 1.403792,
+                    longitude: 103.786964,
+                    travelmode: "DRIVING",
+                    start: 1386856800,
+                    duration: 12600
+                },
+                {
+                    id: "ATTda695fb6212d38c0152ebfa21a9db04f",
+                    name: "Statue of Raffles",
+                    description: "popular icon of raffles",
+                    latitude: 1.352083,
+                    longitude: 103.819839,
+                    travelmode: "DRIVING",
+                    start: 1386869400,
+                    duration: 3600
+                },
+                {
+                    id: "HTL52613f3a13e73b8106fec22759ac2a41",
+                    name: "Concorde Hotel Singapore",
+                    description: "Getting ready",
+                    latitude: 1.300638,
+                    longitude: 103.841972,
+                    travelmode: "DRIVING",
+                    start: 1386873000,
+                    duration: 0
+                }
+            ],
+            [
+                {
+                    id: "HTL52613f3a13e73b8106fec22759ac2a41",
+                    name: "Concorde Hotel Singapore",
+                    description: "Getting ready",
+                    latitude: 1.300638,
+                    longitude: 103.841972,
+                    travelmode: "DRIVING",
+                    start: 1386925200,
+                    duration: 0
+                },
+                {
+                    id: "ATTbb2989a847269ebfd0024167da66ce64",
+                    name: "Malay Heritage Centre",
+                    description: "enjoy the place",
+                    latitude: 1.30245,
+                    longitude: 103.860207,
+                    travelmode: "DRIVING",
+                    start: 1386925200,
+                    duration: 5400
+                },
+                {
+                    id: "ATTa1ac08bcf028cb4377741d68640df215",
+                    name: "Arab Street",
+                    description: "enjoy unique culinary",
+                    latitude: 1.302375,
+                    longitude: 103.858269,
+                    travelmode: "WALKING",
+                    start: 1386930600,
+                    duration: 7200
+                },
+                {
+                    id: "ATT3cc932cbb72b6429dca71a5b57593b11",
+                    name: "Bugis Street",
+                    description: "buy souvenirs here",
+                    latitude: 1.300556,
+                    longitude: 103.854927,
+                    travelmode: "WALKING",
+                    start: 1386937800,
+                    duration: 7200
+                },
+                {
+                    id: "ATT5b097eca546583ca5392097a9abe790a",
+                    name: "Raffles Hotel Museum",
+                    description: "historical hotel",
+                    latitude: 1.29573,
+                    longitude: 103.85379,
+                    travelmode: "WALKING",
+                    start: 1386945000,
+                    duration: 5400
+                },
+                {
+                    id: "ATT40512f4360abf4536fe8d8ba1aa893fc",
+                    name: "Chijmes",
+                    description: "Old Church turned to cafe",
+                    latitude: 1.29543,
+                    longitude: 103.851822,
+                    travelmode: "WALKING",
+                    start: 1386950400,
+                    duration: 7200
+                },
+                {
+                    id: "HTL52613f3a13e73b8106fec22759ac2a41",
+                    name: "Concorde Hotel Singapore",
+                    description: "Getting ready",
+                    latitude: 1.300638,
+                    longitude: 103.841972,
+                    travelmode: "DRIVING",
+                    start: 1386957600,
+                    duration: 0
+                }
+            ],
+            [
+                {
+                    id: "HTL52613f3a13e73b8106fec22759ac2a41",
+                    name: "Concorde Hotel Singapore",
+                    description: "Getting ready",
+                    latitude: 1.300638,
+                    longitude: 103.841972,
+                    travelmode: "DRIVING",
+                    start: 1387011600,
+                    duration: 0
+                },
+                {
+                    id: "ATT00093545b0d9b17f21f9e03171f78454",
+                    name: "Singapore River Cruises and Leisure",
+                    description: "scenery from the river",
+                    latitude: 1.352083,
+                    longitude: 103.819839,
+                    travelmode: "DRIVING",
+                    start: 1387011600,
+                    duration: 5400
+                },
+                {
+                    id: "ATT0f040dca2a14963a50caa9eb1712a06c",
+                    name: "Little India",
+                    description: "must visit place",
+                    latitude: 1.308166,
+                    longitude: 103.851639,
+                    travelmode: "DRIVING",
+                    start: 1387017000,
+                    duration: 9000
+                },
+                {
+                    id: "ATTeb3888ea120607219eadf6e903292719",
+                    name: "National Museum of Singapore",
+                    description: "visit the oldest museum in sg",
+                    latitude: 1.29685,
+                    longitude: 103.848808,
+                    travelmode: "DRIVING",
+                    start: 1387026000,
+                    duration: 9000
+                },
+                {
+                    id: "ATTe81d4dba7db703fc06992ca67e2fb916",
+                    name: "MICA Building",
+                    description: "enjoy the place",
+                    latitude: 1.29057,
+                    longitude: 103.848541,
+                    travelmode: "WALKING",
+                    start: 1387035000,
+                    duration: 5400
+                },
+                {
+                    id: "ATTdafaea3e96b4ad13f3b896e08451920b",
+                    name: "G-MAX Reverse Bungy & GX-5 Extreme Swing",
+                    description: "enjoy the place",
+                    latitude: 1.290668,
+                    longitude: 103.846207,
+                    travelmode: "WALKING",
+                    start: 1387040400,
+                    duration: 5400
+                },
+                {
+                    id: "HTL52613f3a13e73b8106fec22759ac2a41",
+                    name: "Concorde Hotel Singapore",
+                    description: "Getting ready",
+                    latitude: 1.300638,
+                    longitude: 103.841972,
+                    travelmode: "DRIVING",
+                    start: 1387045800,
+                    duration: 0
+                }
+            ]
+        ];	
+
+        var lat = 1.3000;
+	    var longi = 103.8000;
+
+	    cityLatLng = new google.maps.LatLng(lat, longi); //center of the city
+	    var mapOptions = {
+	        zoom: 13,
+	        center: cityLatLng
+	    };
+
+        var maplib = $('#map-canvas').amigomap({
+	        mapOptions: mapOptions, 
+	        agenda: trip_agenda,
+	        onsetmarker: null,
+	        oncomplete: function() {
+	            maplib.amigomap.showDayRoute({
+	                day:0, 
+	                onsetroute: function(){console.log('route is set from the server')},
+	                oncachedroute: function(){console.log('route is set from the cache')}
+	            });
+	        }
+	    });
+
+	    $('#day1').on('click', function(){
+	    	maplib.amigomap.showDayRoute({
+	            day:1,
+	            onsetroute: function(){console.log('route is set from the server')},
+	            oncachedroute: function(){console.log('route is set from the cache')}
+	        });
+	    });
+
+	    $('#day2').on('click', function(){
+	    	maplib.amigomap.showDayRoute({
+	            day:2,
+	            onsetroute: function(){console.log('route is set from the server')},
+	            oncachedroute: function(){console.log('route is set from the cache')}
+	        });
+	    });
+
+	    $('#day3').on('click', function(){
+	    	maplib.amigomap.showDayRoute({
+	            day:1,
+	            onsetroute: function(){console.log('route is set from the server')},
+	            oncachedroute: function(){console.log('route is set from the cache')}
+	        });
+	    });
+	</script>
+</body>
+</html>
