@@ -17,3 +17,7 @@ Updates:
 1. Adding sample.html
 2. Cache route plotting
 3. Update colorset
+
+## Update: 26 February 2014
+Updates:
+1. Fix zooming of map area after get direction service
