@@ -17,3 +17,8 @@ Updates:
 1. Adding sample.html
 2. Cache route plotting
 3. Update colorset
+
+## Updated: 26 February 2014
+Updates:
+1. Fix zooming logic on map area after executing direction service
+2. Remove close button for attraction name

@@ -5,8 +5,8 @@
  * Copyright (c) 2013 Anton Rifco
  * Dual licensed under the MIT and GPL licenses.
  *
- * Date: December 22, 2013
- * Version: 0.1.2
+ * Date: February 26, 2014
+ * Version: 0.1.3
  */
 
 (function($) {
@@ -107,10 +107,13 @@
                 maxWidth: 0,
                 pixelOffset: new google.maps.Size(-75, -75),
                 boxStyle: venueFullInfoBoxStyle,
-                closeBoxMargin: "1px 1px 1px 1px",
-                closeBoxURL: "img/dashboard/closebutton.png",
+                closeBoxURL: "",
+                //closeBoxMargin: "1px 1px 1px 1px",
+                //closeBoxURL: "img/dashboard/closebutton.png",
                 infoBoxClearance: new google.maps.Size(1, 1)
             });
+            
+            if(typeof config.agenda === 'undefined') return;
             
             plotAllMarks();
         
@@ -134,6 +137,7 @@
     $.fn.amigomap.updateAgenda = function(agenda){
         config.agenda = agenda;
         
+        if(typeof agenda === 'undefined') return this;
         $.each(polyDisplay, function(day, apolyDisplay){
             apolyDisplay.setMap(null);
         });
@@ -245,6 +249,7 @@
                     throw 'Markers data is still empty';
                 
                 var latlong = new google.maps.LatLng(venue.latitude, venue.longitude);
+                bound.extend( latlong );
                 if( order != 0 ) {
                     if( index == fconfig.day ){
                         bound.extend( latlong );
@@ -280,7 +285,7 @@
                                             draggable: false,
                                             suppressMarkers: true,
                                             map: map,
-                                            //preserveViewport: true
+                                            preserveViewport: true
                                         });
                                         directionsDisplay[index][order].setDirections(response);
                                         cachedroute[index][order-1] = response.routes;
@@ -331,11 +336,12 @@
                 polyDisplay[index].setVisible(false);
                 
                 map.setCenter(bound.getCenter());
-                var listener = google.maps.event.addListener(map, "idle", function() { 
+                map.fitBounds(bound);
+                /*var listener = google.maps.event.addListener(map, "idle", function() { 
                     map.setZoom(map.getZoom() - 1); 
                     google.maps.event.removeListener(listener); 
-                });
-            } else
+                });*/
+            } else 
                 polyDisplay[index].setVisible(true);
         });
         
@@ -406,7 +412,7 @@
             }
 
             markers_listeners[index][order] = google.maps.event.addListener(markers[index][order], 'click', function() {
-                venueInfobox.setContent('<div><div class="placetooltipbox"><center><span class="placetooltiptext">' +venue.name+ '</span></center></div><img src="img/dashboard/triangle.png" class="placetooltiptriangle"></div>');
+                venueInfobox.setContent('<div><div class="placetooltipbox"><span class="placetooltiptext">' +venue.name+ '</span></div><img src="img/dashboard/triangle.png" class="placetooltiptriangle"></div>');
                 venueInfobox.open(map, this);
                 map.panTo(markers[index][order].getPosition());
             });
