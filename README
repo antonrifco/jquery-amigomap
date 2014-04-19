@@ -22,3 +22,10 @@ Updates:
 Updates:
 1. Fix zooming logic on map area after executing direction service
 2. Remove close button for attraction name
+
+## Updated: 20 April 2014
+Updates:
+1. Add getMap function to return active map
+2. Support empty agenda (with type == 'start')
+3. Handle google.maps.DirectionsStatus.ZERO_RESULTS correctly
+4. Integration with Google Places API: get_nearbyplaces, get_radarplaces, get_searchplaces, get_detailsplace

@@ -6,7 +6,7 @@
  * Dual licensed under the MIT and GPL licenses.
  *
  * Date: February 26, 2014
- * Version: 0.1.3
+ * Version: 0.2
  */
 
 (function($) {
@@ -35,16 +35,16 @@
                 inactive: "https://chart.googleapis.com/chart?chst=d_simple_text_icon_left&chld=|14|000|flag|16|000|FFF"
             },
             colorset: [
-                '#426289', /* route color for day 1 */
-                '#858165', /* route color for day 2 */
-                '#70ADC4', /* route color for day 3 */
-                '#ea8a00', /* route color for day 4 */
-                '#F7998B', /* route color for day 5 */
-                '#38311F', /* route color for day 6 */
-                '#FF034E', /* route color for day 7 */
-                '#017854', /* route color for day 8 */
-                '#C6CFCC', /* route color for day 9 */
-                '#2294F2'  /* route color for day 10 */
+                0x426289, /* route color for day 1 */
+                0x858165, /* route color for day 2 */
+                0x70ADC4, /* route color for day 3 */
+                0xea8a00, /* route color for day 4 */
+                0xF7998B, /* route color for day 5 */
+                0x38311F, /* route color for day 6 */
+                0xFF034E, /* route color for day 7 */
+                0x017854, /* route color for day 8 */
+                0xC6CFCC, /* route color for day 9 */
+                0x2294F2  /* route color for day 10 */
             ],
             directionService: true,
             agenda: sample_agenda,
@@ -127,7 +127,11 @@
         setTimeout(function() { initialize(); }, 0 );
         
         return this;
-    }
+    };
+    
+    $.fn.amigomap.getMap = function(){
+        return map;
+    };
     
     $.fn.amigomap.updateColorset = function(colorset){
         config.colorset = colorset;
@@ -167,7 +171,7 @@
         
         plotAllMarks();
         return this;
-    }
+    };
     
     $.fn.amigomap.updateAgendaDay = function(day, data){
         config.agenda[day] = data;
@@ -191,7 +195,7 @@
         
         plotMarks(day, data);
         return this;
-    }
+    };
 
     $.fn.amigomap.showMarkers = function(day) {
         if(!config.agenda)
@@ -216,7 +220,7 @@
                 }
             });
         });
-    }
+    };
     
     $.fn.amigomap.showDayRoute = function(options){
         var fconfig = $.extend({
@@ -231,9 +235,9 @@
         if(!config.agenda)
             throw 'Your agenda is empty.';
         
-        if(! $.isArray(config.agenda))
+        if(! $.isArray(config.agenda)){
             throw 'Your agenda is not in correct format';
-        
+        }
         if(config.agenda.length <= fconfig.day)
             throw 'Your agenda does not have element number:' + fconfig.day;
         
@@ -247,6 +251,8 @@
             $.each(value, function(order, venue){
                 if(! $.isArray(markers[index]))
                     throw 'Markers data is still empty';
+                
+                if(venue.type == 'start') return true;
                 
                 var latlong = new google.maps.LatLng(venue.latitude, venue.longitude);
                 bound.extend( latlong );
@@ -276,11 +282,25 @@
                             function hitroute() {
                                 directionsService.route(dserver_param, function(response, status) { //Direction request is ASYNCHRONOUS
                                     if (status == google.maps.DirectionsStatus.OK) {
+                                        var color = parseInt(config.colorset[index]);
+                                        
+                                        var lineSymbol = {
+                                            path: 'M 1.5 1 L 1 0 L 1 2 M 0.5 1 L 1 0',
+                                            fillColor: 'black',
+                                            strokeColor: 'black',
+                                            strokeWeight: 2,
+                                            strokeOpacity: 1
+                                        };
                                         directionsDisplay[index][order] = new google.maps.DirectionsRenderer({
                                             polylineOptions: new google.maps.Polyline({
-                                                strokeColor: config.colorset[index],
+                                                strokeColor: color.toString(16).toUpperCase(),
                                                 strokeOpacity: 0.9,
-                                                strokeWeight: 6
+                                                strokeWeight: 5,
+                                                icons: [{
+                                                    icon: lineSymbol,
+                                                    offset: '100%',
+                                                    repeat: '100px'
+                                                }]
                                             }),
                                             draggable: false,
                                             suppressMarkers: true,
@@ -293,7 +313,7 @@
                                         if ( $.isFunction( fconfig.onsetroute ) ) 
                                             fconfig.onsetroute(index, order, response.routes, false); //not cached
 
-                                    } else {
+                                    } else if(status !== google.maps.DirectionsStatus.ZERO_RESULTS){
                                         /* manage retry */
                                         var wait = (status == google.maps.DirectionsStatus.OVER_QUERY_LIMIT) ? 2500 : 700;
                                         setTimeout(function() {
@@ -332,31 +352,33 @@
                 before = venue;
             });
             
-            if(index == fconfig.day) {
-                polyDisplay[index].setVisible(false);
-                
-                map.setCenter(bound.getCenter());
-                map.fitBounds(bound);
-                /*var listener = google.maps.event.addListener(map, "idle", function() { 
-                    map.setZoom(map.getZoom() - 1); 
-                    google.maps.event.removeListener(listener); 
-                });*/
-            } else 
-                polyDisplay[index].setVisible(true);
+            if(config.agenda[0].length > 1){
+                if(index == fconfig.day) {
+                    polyDisplay[index].setVisible(false);
+
+                    map.setCenter(bound.getCenter());
+                    map.fitBounds(bound);
+                    /*var listener = google.maps.event.addListener(map, "idle", function() { 
+                        map.setZoom(map.getZoom() - 1); 
+                        google.maps.event.removeListener(listener); 
+                    });*/
+                } else 
+                    polyDisplay[index].setVisible(true);
+            }
         });
         
         return this;
-    }
+    };
     
     $.fn.amigomap.getMarker = function(day, index){
         if(!markers[day] || !markers[day][index])
             return null;
         return markers[day][index];
-    }
+    };
     
     $.fn.amigomap.trigger = function(object, action){
         return google.maps.event.trigger(object, action);
-    }
+    };
     
     $.fn.amigomap.zoomout = function(increment){
         var intRegex = /^\d+$/;
@@ -367,7 +389,7 @@
             map.setZoom(map.getZoom() - increment); 
             google.maps.event.removeListener(listener); 
         });
-    }
+    };
     
     $.fn.amigomap.zoomin = function(increment){
         var intRegex = /^\d+$/;
@@ -378,7 +400,39 @@
             map.setZoom(map.getZoom() + increment); 
             google.maps.event.removeListener(listener); 
         });
-    }
+    };
+    
+    $.fn.amigomap.get_nearbyplaces = function(request, callback){
+        if(!request)
+            throw 'request parameter cannot be empty.';
+        
+        var service = new google.maps.places.PlacesService(map);
+        service.nearbySearch(request, callback);
+    };
+    
+    $.fn.amigomap.get_radarplaces = function(request, callback){
+        if(!request)
+            throw 'request parameter cannot be empty.';
+        
+        var service = new google.maps.places.PlacesService(map);
+        service.radarSearch(request, callback);
+    };
+    
+    $.fn.amigomap.get_searchplaces = function(request, callback){
+        if(!request)
+            throw 'request parameter cannot be empty.';
+        
+        var service = new google.maps.places.PlacesService(map);
+        service.textSearch(request, callback);
+    };
+    
+    $.fn.amigomap.get_detailsplace = function(request, callback){
+        if(!request)
+            throw 'request parameter cannot be empty.';
+        
+        var service = new google.maps.places.PlacesService(map);
+        service.getDetails(request, callback);
+    };
     
     function plotAllMarks(oncomplete) {
         $.each(config.agenda, function(index, value){
@@ -392,6 +446,7 @@
         markers_listeners[index] = [];
         var paths = [];
         $.each(value, function(order, venue){
+            if(venue.type == 'start') return true;
             var latlong = new google.maps.LatLng(venue.latitude, venue.longitude);
             if(index == 0 && order == 0) /* set map to center of first venue */
                 map.setCenter(latlong);
@@ -412,7 +467,7 @@
             }
 
             markers_listeners[index][order] = google.maps.event.addListener(markers[index][order], 'click', function() {
-                venueInfobox.setContent('<div><div class="placetooltipbox"><span class="placetooltiptext">' +venue.name+ '</span></div><img src="img/dashboard/triangle.png" class="placetooltiptriangle"></div>');
+                venueInfobox.setContent('<div><div class="placetooltipbox"><span class="placetooltiptext">' +venue.name.substr(0,25)+ '</span></div><img src="img/dashboard/triangle.png" class="placetooltiptriangle"></div>');
                 venueInfobox.open(map, this);
                 map.panTo(markers[index][order].getPosition());
             });
@@ -425,9 +480,9 @@
         if(config.directionService) {
             polyDisplay[index] = new google.maps.Polyline({
                 path: paths,
-                strokeColor: config.colorset[index],
-                strokeOpacity: 0.6,
-                strokeWeight: 3
+                strokeColor: config.colorset[index].toString(16).toUpperCase(),
+                strokeOpacity: 0.4,
+                strokeWeight: 2
             });
             polyDisplay[index].setMap(map);
             polyDisplay[index].setVisible(true);
